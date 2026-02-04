@@ -13,8 +13,6 @@ const register = catchAsync(async (req, res) => {
 
   await queueService.push("sendVerificationEmail", user);
 
-  // await mailService.sendVerificationEmail(user);
-
   const accessToken = await authService.signAccessToken(user);
   const refreshToken = await authService.signRefreshToken(user);
 
@@ -94,6 +92,7 @@ const getCurrentUser = catchAsync(async (req, res) => {
 });
 
 const changePassword = catchAsync(async (req, res) => {
+  const { email } = req.currentUser;
   const {
     password,
     new_password: newPassword,
@@ -101,6 +100,7 @@ const changePassword = catchAsync(async (req, res) => {
   } = req.body;
   const credentials = {
     id: req.currentUser.id,
+    email,
     password,
     newPassword,
     newPasswordConfirmation,

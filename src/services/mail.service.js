@@ -35,11 +35,30 @@ class MailService {
     const result = await this.send({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,
-      subject: "Verification",
+      subject: "[Account Update] Email verified successfully",
       template: "auth/verificationEmail",
       templateData: {
         verificationLink,
         verificationEmailTTL,
+      },
+    });
+
+    return result;
+  }
+
+  async changePassword(user) {
+    const { fromAddress, fromName } = mailConfig;
+    const supportLink = mailConfig.supportLink;
+    const changeTime = new Date().toLocaleString("vi-VN");
+
+    const result = await this.send({
+      from: `"${fromName}" <${fromAddress}>`,
+      to: user.email,
+      subject: "[Account Update] Password changed successfully",
+      template: "auth/changePassword",
+      templateData: {
+        changeTime,
+        supportLink,
       },
     });
 

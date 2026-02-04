@@ -63,15 +63,22 @@ async function changePassword(body) {
 
 async function verifyEmail(body) {
   const { userId } = body;
-  const query = `SELECT COUNT(*) AS count FROM users WHERE id = ? AND email_verified_at IS NOT NULL;`;
-  const [[{ count }]] = await db.query(query, [userId]);
-  if (count > 0) {
-    return false;
+  const query = `SELECT COUNT(*) AS countUserVerified FROM users WHERE id = ? AND email_verified_at IS NOT NULL;`;
+  const [[{ countUserVerified }]] = await db.query(query, [userId]);
+  if (countUserVerified > 0) {
+    return [false, "User already verified."];
   }
-  await db.query("UPDATE users SET email_verified_at = now() WHERE id = ?", [
+
+  const queryFindUser = `SELECT COUNT(*) AS countUser FROM users WHERE id = ?;`;
+  const [[{ countUser }]] = await db.query(queryFindUser, [userId]);
+  if (countUser === 0) {
+    return [false, "User not found."];
+  }
+
+  const result = await db.query("UPDATE users SET email_verified_at = now() WHERE id = ?", [
     userId,
   ]);
-  return true;
+  return [true, result];
 }
 
 module.exports = {

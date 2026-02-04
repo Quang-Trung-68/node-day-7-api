@@ -6,6 +6,7 @@ const AppError = require("@/utils/AppError");
 const { httpCodes } = require("../configs/constants");
 const appConfig = require("@/configs/app.config");
 const bcrypt = require("bcrypt");
+const mailService = require("./mail.service");
 
 class AuthService {
   async signAccessToken(user) {
@@ -210,7 +211,8 @@ class AuthService {
   }
 
   async changePassword(credentials) {
-    const { id, password, newPassword, newPasswordConfirmation } = credentials;
+    const { id, email, password, newPassword, newPasswordConfirmation } =
+      credentials;
     try {
       if (!password || !newPassword || !newPasswordConfirmation) {
         throw new AppError(
@@ -261,8 +263,10 @@ class AuthService {
         authConfig.saltRounds,
       );
 
-      const result = await authModel.changePassword({ id, newHashedPassword });
-      return result;
+      await authModel.changePassword({ id, newHashedPassword });
+
+      await mailService.changePassword({ email });
+      return null;
     } catch (error) {
       throw error;
     }
@@ -280,7 +284,7 @@ class AuthService {
 
   async verifyEmail(token) {
     if (!token) {
-      throw new AppError(httpCodes.unauthorized || 400, "Token is required.");
+      throw new AppError(httpCodes.unauthorized || 400, "Verify email token is required.");
     }
 
     const payload = jwt.verify(
@@ -292,18 +296,18 @@ class AuthService {
       if (payload.exp < Date.now() / 1000) {
         throw new AppError(
           httpCodes.unauthorized || 401,
-          "Token invalid or expired.",
+          "Verify email token invalid or expired.",
         );
       }
 
       const userId = payload.sub;
 
-      const result = await authModel.verifyEmail({ userId });
+      const [isSuccess, message] = await authModel.verifyEmail({ userId });
 
-      if (!result) {
+      if (!isSuccess) {
         throw new AppError(
           httpCodes.unprocessableContent || 422,
-          "Invalid user or email has been verified.",
+          message,
         );
       }
 
