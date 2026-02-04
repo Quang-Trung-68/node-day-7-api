@@ -1,11 +1,12 @@
 {
   "scripts": {
     "dev": "node --watch ./server.js",
-    "start": "node server.js",
+    "start": "concurrently 'node server.js' 'node queue.js'",
     "queue": "node queue.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "ejs": "^4.0.1",
