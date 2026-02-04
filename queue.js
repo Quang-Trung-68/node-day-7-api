@@ -6,12 +6,13 @@ const sleep = require("./src/utils/sleep");
 const { taskStatus } = require("./src/configs/constants");
 
 (async () => {
+  console.log("Queue worker is running...");
   while (true) {
     const firstTask = await queueService.getPendingJob();
     if (firstTask) {
       const { id, type, payload: jsonPayload } = firstTask;
       try {
-        console.log(`Task "${type}" is processing...`);
+        console.log(`Task "${type}" (ID: ${id}) is processing...`);
         const payload = JSON.parse(jsonPayload);
 
         await queueService.updateStatus(id, taskStatus.inprogress);
@@ -20,14 +21,15 @@ const { taskStatus } = require("./src/configs/constants");
         if (handler) {
           await handler(payload);
         } else {
-          console.log(`Task '${type}' type is not defined.`);
+          console.error(`Task '${type}' type is not defined.`);
         }
 
-        queueService.updateStatus(id, taskStatus.completed);
+        await queueService.updateStatus(id, taskStatus.completed);
         console.log(`Task "${type}" processed.`);
       } catch (error) {
-        console.log(`Task "${type}" failed.`);
-        queueService.updateStatus(id, taskStatus.failed);
+        console.error(`Task "${type}" (ID: ${id}) failed.`);
+        console.error(error);
+        await queueService.updateStatus(id, taskStatus.failed);
       }
     }
     await sleep(3000);
