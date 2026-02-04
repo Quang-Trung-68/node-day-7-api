@@ -7,6 +7,7 @@ const { httpCodes } = require("../configs/constants");
 const appConfig = require("@/configs/app.config");
 const bcrypt = require("bcrypt");
 const mailService = require("./mail.service");
+const queueService = require("./queue.service");
 
 class AuthService {
   async signAccessToken(user) {

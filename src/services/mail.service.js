@@ -35,7 +35,7 @@ class MailService {
     const result = await this.send({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,
-      subject: "[Account Update] Email verified successfully",
+      subject: "[Account Update] Email verification",
       template: "auth/verificationEmail",
       templateData: {
         verificationLink,
@@ -54,7 +54,7 @@ class MailService {
     const result = await this.send({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,
-      subject: "[Account Update] Password changed successfully",
+      subject: "[Account Update] Password changed",
       template: "auth/changePassword",
       templateData: {
         changeTime,
