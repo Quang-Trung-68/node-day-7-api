@@ -9,9 +9,10 @@ const responseFormat = require("./src/middlewares/responseFormat");
 const { apiRateLimiter } = require("./src/middlewares/rateLimiter");
 const notFoundHandler = require("./src/middlewares/notFoundHandler");
 const exceptionHandler = require("./src/middlewares/exceptionHandler");
+const appConfig = require("./src/configs/app.config");
 
 const app = express();
-const port = 3000;
+const port = appConfig.port;
 
 app.use(responseFormat);
 app.use(express.json());
