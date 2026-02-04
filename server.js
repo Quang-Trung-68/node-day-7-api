@@ -12,7 +12,6 @@ const exceptionHandler = require("./src/middlewares/exceptionHandler");
 const appConfig = require("./src/configs/app.config");
 
 const app = express();
-const port = appConfig.port;
 
 app.use(responseFormat);
 app.use(express.json());
@@ -23,6 +22,6 @@ app.use("/api", routes);
 app.use(notFoundHandler);
 app.use(exceptionHandler);
 
-app.listen(port, () => {
-  console.log("Server running on port: ", port);
+app.listen(appConfig.port, () => {
+  console.log("Server running on port: ", appConfig.port);
 });
