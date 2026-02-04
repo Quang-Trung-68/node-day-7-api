@@ -1,38 +1,48 @@
 const ejs = require("ejs");
 const path = require("node:path");
+const { Resend } = require("resend");
 
 const mailConfig = require("@/configs/mail.config");
-const { transporter } = require("@/libs/nodemailer");
 const authService = require("@/services/auth.service");
 const authConfig = require("../configs/auth.config");
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 class MailService {
   getTemplatePath(template) {
-    const templatePath = path.join(
+    return path.join(
       __dirname,
       "..",
       "resource",
       "mail",
       `${template.replace(".ejs", "")}.ejs`,
     );
-    return templatePath;
   }
 
   async send(options) {
     const { template, templateData, ...restOptions } = options;
+
     const templatePath = this.getTemplatePath(template);
     const html = await ejs.renderFile(templatePath, templateData);
-    const result = await transporter.sendMail({ ...restOptions, html });
+
+    const result = await resend.emails.send({
+      ...restOptions,
+      html,
+    });
 
     return result;
   }
 
   async sendVerificationEmail(user) {
-    const { fromAddress, fromName } = mailConfig;
+    const { fromName } = mailConfig;
+    const fromAddress =
+      process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+
     const verificationLink = authService.generateVerificationLink(user);
+
     const verificationEmailTTL = authConfig.verificationEmailTokenTTL / 3600;
 
-    const result = await this.send({
+    return this.send({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,
       subject: "[Account Update] Email verification",
@@ -42,16 +52,16 @@ class MailService {
         verificationEmailTTL,
       },
     });
-
-    return result;
   }
 
   async changePassword(user) {
-    const { fromAddress, fromName } = mailConfig;
-    const supportLink = mailConfig.supportLink;
+    const { fromName, supportLink } = mailConfig;
+    const fromAddress =
+      process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+
     const changeTime = new Date().toLocaleString("vi-VN");
 
-    const result = await this.send({
+    return this.send({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,
       subject: "[Account Update] Password changed",
@@ -61,8 +71,6 @@ class MailService {
         supportLink,
       },
     });
-
-    return result;
   }
 }
 
