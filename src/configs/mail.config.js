@@ -1,7 +1,8 @@
 const mailConfig = {
   fromName: process.env.MAIL_FROM_NAME,
   fromAddress: process.env.MAIL_FROM_ADDRESS,
-  appPassword: process.env.MAIL_APP_PASSWORD,
+  resendApiKey: process.env.RESEND_API_KEY,
+  resendFromEmail: process.env.RESEND_FROM_EMAIL,
   supportLink: process.env.MAIL_SUPPORT_LINK,
 };
 

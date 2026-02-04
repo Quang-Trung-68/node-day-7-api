@@ -6,7 +6,7 @@ const mailConfig = require("@/configs/mail.config");
 const authService = require("@/services/auth.service");
 const authConfig = require("../configs/auth.config");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(mailConfig.resendApiKey);
 
 class MailService {
   getTemplatePath(template) {
@@ -34,9 +34,8 @@ class MailService {
   }
 
   async sendVerificationEmail(user) {
-    const { fromName } = mailConfig;
-    const fromAddress =
-      process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+    const { fromName, resendFromEmail } = mailConfig;
+    const fromAddress = resendFromEmail || "onboarding@resend.dev";
 
     const verificationLink = authService.generateVerificationLink(user);
 
