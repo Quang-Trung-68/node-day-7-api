@@ -265,7 +265,7 @@ class AuthService {
 
       await authModel.changePassword({ id, newHashedPassword });
 
-      await mailService.changePassword({ email });
+      queueService.push("changePassword", { email })
       return null;
     } catch (error) {
       throw error;
