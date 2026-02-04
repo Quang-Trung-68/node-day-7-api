@@ -17,6 +17,10 @@ app.use(responseFormat);
 app.use(express.json());
 app.use(apiRateLimiter);
 app.use(cors(corsOptions));
+app.get("/", (req, res) => {
+  res.send("API is ready");
+});
+
 app.use("/api", routes);
 
 app.use(notFoundHandler);
