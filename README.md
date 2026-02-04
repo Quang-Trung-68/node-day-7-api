@@ -1,185 +1,137 @@
 # Chat App API
 
-A modern, robust Chat Application API built with Node.js, Express, and MySQL. It supports private direct messages, group chats, and real-time-ready message history.
+A modern, high-performance Chat Application Backend built with Node.js, Express, and TiDB/MySQL. This API provides a solid foundation for real-time messaging, supporting both 1-on-1 and group conversations with a robust security layer and background job processing.
 
-## Features
+## 🔗 Live Demo
+**Render Deployment:** [Render Link](https://node-day-7-api.onrender.com)
 
-- **Authentication**: Secure registration and login using JWT and Bcrypt.
-- **Conversations**: Create direct (1-on-1) or group chats.
-- **Participants**: Manage group chat members.
-- **Messages**: Send and retrieve message history with sender information.
-- **User Search**: Search users by email for easy connection.
-- **Robust Error Handling**: Standardized JSON responses for all success and error cases.
-- **Security**: Rate limiting and secure password hashing.
+---
 
-## Prerequisites
+## ✨ Key Features
 
-- **Node.js**: v18 or higher recommended.
-- **MySQL**: v8.0 or higher.
-- **Postman/Curl**: For API testing.
+- **Advanced Authentication**: 
+  - Dual-token system (JWT Access & Refresh tokens).
+  - Secure password hashing with Bcrypt.
+  - Email verification workflow and token revocation.
+- **Rich Messaging**:
+  - Support for Direct (1-on-1) and Group chats.
+  - Full message history with sender metadata.
+  - Dynamic participant management.
+- **Robust Background System**:
+  - Asynchronous task processing using a custom MySQL-based queue.
+  - Automatic email notifications (Verification, Password Changes).
+- **Enterprise-Grade Security**:
+  - Global rate limiting to prevent DDoS/Brute-force.
+  - Standardized error handling and secure JSON response format.
+  - CORS-enabled with environment-specific whitelist.
+- **Scalable Design**: 
+  - Module-based routing and domain-driven architecture.
 
-## Installation & Setup
+---
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd node-day-5-api
-   ```
+## 🛠️ Technology Stack
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+- **Runtime**: Node.js (v18+)
+- **Framework**: Express.js
+- **Database**: MySQL / TiDB
+- **Key Libraries**:
+  - `jsonwebtoken` for secure Auth.
+  - `bcrypt` for password security.
+  - `nodemailer` & `resend` for email delivery.
+  - `concurrently` for running dev environments.
 
-3. **Environment Configuration**:
-   Create a `.env` file in the root directory (you can copy from `.env.example`):
-   ```env
-   NODE_ENV=development
-   PORT=3000
-   
-   # Database configuration
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASS=your_password
-   DB_NAME=chat_app_db
-   
-   # Auth configuration
-   AUTH_JWT_SECRET=your_super_secret_key
-   AUTH_ACCESS_TOKEN_TTL=3600
-   ```
+---
 
-## Database Schema
+## 🚀 Getting Started
 
-Run the following SQL commands to set up your database structure:
+### 1. Prerequisites
+- Node.js installed on your machine.
+- A running MySQL or TiDB instance.
 
-```sql
-CREATE DATABASE IF NOT EXISTS chat_app_db;
-USE chat_app_db;
-
--- 1. Users table
-CREATE TABLE IF NOT EXISTS `users` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL UNIQUE,
-  `password` varchar(255) NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 2. Conversations table
-CREATE TABLE IF NOT EXISTS `conversations` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `created_by` bigint unsigned NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `type` enum('group','direct') NOT NULL DEFAULT 'direct',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `fk_conversations_created_by` (`created_by`),
-  CONSTRAINT `fk_conversations_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 3. Conversation Participants table
-CREATE TABLE IF NOT EXISTS `conversation_participants` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `conversation_id` bigint unsigned NOT NULL,
-  `user_id` bigint unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_participant` (`conversation_id`,`user_id`),
-  KEY `fk_participants_user_id` (`user_id`),
-  CONSTRAINT `fk_participants_conversation_id` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_participants_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 4. Messages table
-CREATE TABLE IF NOT EXISTS `messages` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `conversation_id` bigint unsigned NOT NULL,
-  `sender_id` bigint unsigned NOT NULL,
-  `content` text NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `fk_messages_conversation_id` (`conversation_id`),
-  KEY `fk_messages_sender_id` (`sender_id`),
-  CONSTRAINT `fk_messages_conversation_id` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_messages_sender_id` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+### 2. Installation
+```bash
+git clone https://github.com/Quang-Trung-68/node-day-7-api
+cd node-day-7-api
+npm install
 ```
 
-## Running the Application
+### 3. Environment Configuration
+Create a `.env` file in the root directory and configure the following variables:
 
-- **Development Mode** (with auto-reload):
-  ```bash
-  npm run dev
-  ```
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `APP_PORT` | Port for the API server | `3000` |
+| `APP_URL` | Base URL of your app | `http://localhost:3000` |
+| `DB_HOST` | Database server host | `localhost` |
+| `DB_USER` | Database username | `root` |
+| `DB_PASS` | Database password | `your_password` |
+| `DB_NAME` | Database name | `node-day-7` |
+| `AUTH_ACCESS_TOKEN_JWT_SECRET` | Secret for Access Tokens | `long-random-string` |
+| `AUTH_REFRESH_TOKEN_JWT_SECRET` | Secret for Refresh Tokens | `another-random-string` |
 
-- **Production Mode**:
-  ```bash
-  npm start
-  ```
+### 4. Database Setup
+Ensure your database is created, then run the structural script:
+```bash
+mysql -u your_user -p node-day-7 < database.sql
+```
+*Note: The [database.sql](./database.sql) file contains the full schema extracted from the production environment.*
 
-The API will be available at `http://localhost:3000/api`.
+### 5. Running the Application
 
-## API Documentation & Demo
-
-### 1. Authentication
-
-**Register a new user:**
-- `POST /api/auth/register`
-- Body: `{"email": "user@example.com", "password": "password123"}`
-
-**Login:**
-- `POST /api/auth/login`
-- Body: `{"email": "user@example.com", "password": "password123"}`
-- Returns: `accessToken`
-
-### 2. Conversations
-
-**Create a new conversation:**
-- `POST /api/conversations` (Auth Required)
-- Body: `{"name": "Project Group", "type": "group", "participant_ids": [2, 3]}`
-
-**Get all conversations for current user:**
-- `GET /api/conversations` (Auth Required)
-
-**Add a participant to a conversation:**
-- `POST /api/conversations/:id/participants` (Auth Required)
-- Body: `{"user_id": 4}`
-
-### 3. Messages
-
-**Send a message:**
-- `POST /api/conversations/:id/messages` (Auth Required)
-- Body: `{"content": "Hello everyone!"}`
-
-**Get message history:**
-- `GET /api/conversations/:id/messages` (Auth Required)
-
-### 4. Users
-
-**Search users by email:**
-- `GET /api/users/search?q=user@example.com` (Auth Required)
-
-## Response Format
-
-All responses follow a consistent format:
-
-**Success:**
-```json
-{
-  "status": "success",
-  "data": { ... }
-}
+**Development Mode (Auto-restart):**
+```bash
+npm run dev
 ```
 
-**Error:**
-```json
-{
-  "status": "error",
-  "message": "Error description here",
-  "error": { ... }
-}
+**Production Mode (API Server + Queue Worker):**
+```bash
+npm start
 ```
+
+**Run Queue Worker Only:**
+```bash
+npm run queue
+```
+
+---
+
+## 📖 API Documentation
+
+### Authentication (`/api/auth`)
+- `POST /register`: Create a new account (`email`, `password`).
+- `POST /login`: Generate tokens and login (`email`, `password`).
+- `POST /refresh-token`: Get a new Access Token using a Refresh Token.
+- `GET /me`: Retrieve current user profile (Auth required).
+- `POST /verify-email`: Confirm user email using token.
+- `POST /change-password`: Update account password (Auth required).
+
+### Conversations (`/api/conversations`)
+- `GET /`: List all conversations for the authenticated user.
+- `POST /`: Create a new conversation (`name`, `type`, `participant_ids`).
+- `POST /:id/participants`: Add a new member to a group chat.
+- `GET /:id/messages`: Fetch conversation history.
+- `POST /:id/messages`: Send a new message (`content`).
+
+### Users (`/api/users`)
+- `GET /search?email=...`: Search for other users to start conversations.
+
+---
+
+## 📁 Project Structure
+```text
+src/
+├── configs/      # Configuration files (DB, Auth, Constants)
+├── controllers/  # Request handlers
+├── middlewares/  # Auth, Rate Limiting, Error handling
+├── models/       # Database queries and logic
+├── routes/       # API endpoint definitions
+├── services/     # Business logic layer
+└── tasks/        # Background job definitions
+server.js         # Entry point for API
+queue.js          # Entry point for background worker
+```
+
+---
+
+## 🛡️ Security Note
+All sensitive endpoints are protected by a custom `authRequired` middleware. We use **Rate Limiting** globally to ensure API stability. For production, ensure `CLIENT_URL` in `.env` is set strictly to your frontend domain.
