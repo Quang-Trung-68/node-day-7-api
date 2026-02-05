@@ -53,10 +53,9 @@ class MailService {
     });
   }
 
-  async changePassword(user) {
-    const { fromName, supportLink } = mailConfig;
-    const fromAddress =
-      process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+  async sendPasswordChangeEmail(user) {
+    const { fromName, resendFromEmail, supportLink } = mailConfig;
+    const fromAddress = resendFromEmail || "onboarding@resend.dev";
 
     const changeTime = new Date().toLocaleString("vi-VN");
 

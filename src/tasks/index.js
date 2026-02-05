@@ -1,9 +1,9 @@
 const { readdirSync } = require("node:fs");
 
 const tasks = readdirSync(__dirname)
-  .filter((fileName) => fileName !== "index.js")
+  .filter((fileName) => fileName !== "index.js" && fileName.endsWith(".task.js"))
   .reduce((obj, fileName) => {
-    const type = fileName.replace(".js", "");
+    const type = fileName.replace(".task.js", "");
     return {
       ...obj,
       [type]: require(`./${fileName}`),
