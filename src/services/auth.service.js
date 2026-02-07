@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const authConfig = require("@/configs/auth.config");
-const revokedToken = require("@/models/revokedToken.model");
+const token = require("@/models/token.model");
 const authModel = require("@/models/auth.model");
 const AppError = require("@/utils/AppError");
 const { httpCodes } = require("../configs/constants");
@@ -22,7 +22,7 @@ class AuthService {
         authConfig.jwtAccessTokenSecret,
       );
 
-      await revokedToken.saveAccessToken({
+      await token.saveAccessToken({
         userId: user.id,
         accessToken,
       });
@@ -45,7 +45,7 @@ class AuthService {
         authConfig.jwtRefreshTokenSecret,
       );
 
-      await revokedToken.saveRefreshToken({
+      await token.saveRefreshToken({
         userId: user.id,
         refreshToken,
         expiresAt: new Date(Date.now() + ttl * 24 * 60 * 60 * 1000),
@@ -108,7 +108,7 @@ class AuthService {
   async checkValidRefreshToken(refreshToken) {
     try {
       const body = { refreshToken };
-      const isValid = await revokedToken.checkValidRefreshToken(body);
+      const isValid = await token.checkValidRefreshToken(body);
       if (!isValid) {
         throw new AppError(
           httpCodes.badRequest || 400,
@@ -127,7 +127,7 @@ class AuthService {
   async checkValidAccessToken(accessToken) {
     try {
       const body = { accessToken };
-      const isValid = await revokedToken.checkValidAccessToken(body);
+      const isValid = await token.checkValidAccessToken(body);
       if (!isValid) {
         throw new AppError(
           httpCodes.badRequest || 400,
@@ -146,7 +146,7 @@ class AuthService {
   async revokeRefreshToken(refreshToken) {
     try {
       const body = { refreshToken };
-      const isValid = await revokedToken.revokeRefreshToken(body);
+      const isValid = await token.revokeRefreshToken(body);
       if (!isValid) {
         throw new AppError(
           httpCodes.badRequest || 400,
@@ -189,10 +189,10 @@ class AuthService {
   async logout(credentials) {
     try {
       const { access_token, refresh_token } = credentials;
-      const isValidAccessToken = await revokedToken.checkValidAccessToken({
+      const isValidAccessToken = await token.checkValidAccessToken({
         accessToken: access_token,
       });
-      const isValidRefreshToken = await revokedToken.checkValidRefreshToken({
+      const isValidRefreshToken = await token.checkValidRefreshToken({
         refreshToken: refresh_token,
       });
       if (!isValidAccessToken || !isValidRefreshToken) {
@@ -285,7 +285,10 @@ class AuthService {
 
   async verifyEmail(token) {
     if (!token) {
-      throw new AppError(httpCodes.unauthorized || 400, "Verify email token is required.");
+      throw new AppError(
+        httpCodes.unauthorized || 400,
+        "Verify email token is required.",
+      );
     }
 
     const payload = jwt.verify(
@@ -306,10 +309,7 @@ class AuthService {
       const [isSuccess, message] = await authModel.verifyEmail({ userId });
 
       if (!isSuccess) {
-        throw new AppError(
-          httpCodes.unprocessableContent || 422,
-          message,
-        );
+        throw new AppError(httpCodes.unprocessableContent || 422, message);
       }
 
       return null;
